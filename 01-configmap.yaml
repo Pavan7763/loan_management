@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loan-config
+  namespace: loan-manager
+data:
+  # Where the SPA is served for CORS (backend won't really need it now, but keeping)
+  FRONTEND_URL: "http://localhost:30001"
+
+  # Frontend will call same-origin /api (nginx will proxy to backend)
+  API_BASE: "/api"
+
+  # Replaces /usr/share/nginx/html/config.js in the frontend container
+  config.js: |
+    // Frontend will call same-origin /api (proxied by Nginx to backend Service)
+    window.__APP_CONFIG__ = { API_BASE: "/api" };

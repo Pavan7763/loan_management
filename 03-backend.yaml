@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loan-backend
+  namespace: loan-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loan-backend
+  template:
+    metadata:
+      labels:
+        app: loan-backend
+    spec:
+      containers:
+        - name: backend
+          image: borravenkatesh/backend:v1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PORT
+              value: "8080"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: loan-secrets
+                  key: MONGODB_URI
+            - name: MONGODB_DBNAME
+              valueFrom:
+                secretKeyRef:
+                  name: loan-secrets
+                  key: MONGODB_DBNAME
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: loan-secrets
+                  key: JWT_SECRET
+            - name: FRONTEND_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: loan-config
+                  key: FRONTEND_URL
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: loan-backend
+  namespace: loan-manager
+spec:
+  # ClusterIP = internal-only
+  type: ClusterIP
+  selector:
+    app: loan-backend
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
